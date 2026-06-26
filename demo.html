@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SCCT - Quản lý thiết bị cơ điện</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Segoe UI',sans-serif;background:#eef1f6;min-height:100vh;display:flex;color:#1f2937}
+input,select,textarea,button{font-family:inherit;font-size:14px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:#9ca3af}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────── */
+#sidebar{width:245px;min-height:100vh;background:linear-gradient(180deg,#0d1f3c 0%,#1a3558 55%,#1e4175 100%);display:flex;flex-direction:column;flex-shrink:0;box-shadow:4px 0 20px rgba(0,0,0,.18)}
+.sb-header{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,.08);position:relative}
+.sb-header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3b82f6,#60a5fa)}
+.sb-logo{font-size:18px;font-weight:700;color:#fff;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+.sb-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;box-shadow:0 2px 8px rgba(59,130,246,.4);flex-shrink:0}
+.sb-sub{font-size:11px;color:#7db3d8;margin-top:3px;letter-spacing:.02em}
+.sb-menu{padding:14px 10px;flex:1;overflow-y:auto}
+.sb-label{font-size:10px;color:#4a7fa5;text-transform:uppercase;letter-spacing:.1em;padding:4px 10px;margin-bottom:6px;margin-top:4px;font-weight:600}
+.sb-btn{width:100%;text-align:left;padding:9px 12px;border:none;border-left:3px solid transparent;cursor:pointer;font-size:13px;color:#a8cfe8;background:transparent;margin-bottom:2px;transition:.18s;display:flex;align-items:center;gap:9px;border-radius:0 8px 8px 0}
+.sb-btn:hover{background:rgba(255,255,255,.07);color:#e0efff;border-left-color:rgba(59,130,246,.4)}
+.sb-btn.active{background:linear-gradient(90deg,rgba(59,130,246,.22),rgba(59,130,246,.05));color:#fff;font-weight:600;border-left-color:#3b82f6}
+.sb-btn-icon{font-size:15px;opacity:.85;flex-shrink:0}
+.sb-footer{padding:14px 18px 18px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-user-info{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sb-name{font-size:13px;font-weight:600;color:#fff}
+.sb-role{font-size:11px;color:#7db3d8;margin-top:1px}
+.sb-logout{font-size:12px;color:#4a7fa5;background:none;border:1px solid rgba(255,255,255,.1);border-radius:7px;cursor:pointer;padding:5px 12px;width:100%;transition:.15s;color:#a8cfe8}
+.sb-logout:hover{background:rgba(255,255,255,.08);color:#fff}
+
+/* ── CONTENT ─────────────────────────────────────────────────── */
+#content{flex:1;padding:28px 32px;overflow:auto}
+.page-title{font-size:22px;font-weight:700;color:#0f172a;margin-bottom:4px;letter-spacing:-.3px;border-left:4px solid #3b82f6;padding-left:12px}
+.page-sub{font-size:13px;color:#64748b;margin-bottom:22px;padding-left:16px}
+
+/* ── CARD ────────────────────────────────────────────────────── */
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04);border:1px solid rgba(226,232,240,.8)}
+.card-p{padding:18px}
+.card-p4{padding:24px}
+
+/* ── GRID ────────────────────────────────────────────────────── */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr)}}
+
+/* ── STAT CARD ───────────────────────────────────────────────── */
+.stat-card{background:linear-gradient(135deg,#fff 0%,#f8faff 100%);border-radius:14px;padding:18px 20px;border:1px solid rgba(226,232,240,.9);border-left:5px solid #3b82f6;box-shadow:0 2px 8px rgba(15,23,42,.06);transition:transform .18s,box-shadow .18s;cursor:default}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(15,23,42,.1)}
+.stat-val{font-size:30px;font-weight:700;color:#0f172a;letter-spacing:-.5px;line-height:1}
+.stat-lbl{font-size:12px;font-weight:600;color:#374151;margin-top:6px;text-transform:uppercase;letter-spacing:.03em}
+.stat-sub{font-size:11px;color:#94a3b8;margin-top:3px}
+
+/* ── BADGE ───────────────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;letter-spacing:.01em}
+.b-normal{background:#dcfce7;color:#15803d;border:1px solid rgba(21,128,61,.2)}
+.b-broken{background:#fee2e2;color:#dc2626;border:1px solid rgba(220,38,38,.2)}
+.b-maintain{background:#fef9c3;color:#a16207;border:1px solid rgba(161,98,7,.2)}
+.b-pending{background:#ede9fe;color:#6d28d9;border:1px solid rgba(109,40,217,.2)}
+
+/* ── FORM CONTROLS ───────────────────────────────────────────── */
+.form-label{font-size:11.5px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px}
+.form-ctrl{width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:9px 14px;font-size:13.5px;outline:none;transition:.18s;background:#fff;color:#1e293b}
+.form-ctrl:focus{border-color:#3b82f6;box-shadow:0 0 0 4px rgba(59,130,246,.12)}
+.form-ctrl:hover:not(:focus){border-color:#cbd5e1}
+textarea.form-ctrl{resize:vertical;line-height:1.5}
+select.form-ctrl{cursor:pointer}
+
+/* ── BUTTONS ─────────────────────────────────────────────────── */
+.btn{border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:.18s;letter-spacing:.01em}
+.btn-primary{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;box-shadow:0 2px 6px rgba(59,130,246,.35)}
+.btn-primary:hover{background:linear-gradient(135deg,#2563eb,#1d4ed8);box-shadow:0 4px 12px rgba(59,130,246,.45);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none}
+.btn-outline{background:#fff;color:#374151;border:1.5px solid #e2e8f0}
+.btn-outline:hover{background:#f8faff;border-color:#93c5fd;color:#1d4ed8}
+.btn-danger{background:none;border:none;color:#ef4444;font-size:12px;cursor:pointer;font-weight:600}
+.btn-danger:hover{color:#b91c1c}
+.btn-sm{padding:5px 12px;font-size:12px}
+
+/* ── ROW ITEM ────────────────────────────────────────────────── */
+.row-item{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;background:#fff;border-radius:12px;border:1.5px solid #f1f5f9;margin-bottom:8px;transition:.15s;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+.row-item:hover{border-color:#bfdbfe;box-shadow:0 2px 8px rgba(59,130,246,.08)}
+.row-item .ri-main{font-size:13.5px;font-weight:600;color:#1e293b}
+.row-item .ri-sub{font-size:11.5px;color:#94a3b8;margin-top:2px}
+.row-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ────────────────────────────────────────────── */
+.prog-wrap{background:#f1f5f9;border-radius:6px;height:7px;margin-top:6px;overflow:hidden}
+.prog-bar{background:linear-gradient(90deg,#22c55e,#16a34a);height:7px;border-radius:6px;transition:.4s}
+
+/* ── ALERT ───────────────────────────────────────────────────── */
+.alert-success{background:#f0fdf4;border:1.5px solid #bbf7d0;color:#15803d;padding:11px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.alert-info{background:#eff6ff;border:1.5px solid #bfdbfe;color:#1d4ed8;padding:11px 16px;border-radius:10px;font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* ── STATUS GRID ─────────────────────────────────────────────── */
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.status-opt{padding:9px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:13px;cursor:pointer;text-align:center;transition:.15s;background:#fff;font-weight:500}
+.status-opt:hover{border-color:#93c5fd;background:#f8faff}
+.status-opt.selected{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;font-weight:600}
+
+/* ── SECTION HEADER ──────────────────────────────────────────── */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sec-title{font-size:15px;font-weight:700;color:#1e293b;letter-spacing:-.1px}
+
+/* ── LOGIN ───────────────────────────────────────────────────── */
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0d1f3c 0%,#1a3558 45%,#1d4ed8 100%);display:flex;align-items:center;justify-content:center}
+#login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,rgba(59,130,246,.15) 0%,transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(99,102,241,.1) 0%,transparent 50%)}
+.login-box{background:#fff;border-radius:22px;padding:40px;width:100%;max-width:430px;box-shadow:0 30px 80px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);position:relative}
+.login-logo{width:62px;height:62px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(59,130,246,.4),0 2px 6px rgba(0,0,0,.15)}
+.login-title{text-align:center;font-size:22px;font-weight:700;color:#0f172a;letter-spacing:-.3px}
+.login-sub{text-align:center;font-size:13px;color:#94a3b8;margin-top:5px;margin-bottom:26px}
+.login-divider{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.user-list-wrap{max-height:280px;overflow-y:auto;padding-right:2px;margin-bottom:4px}
+.user-opt{width:100%;text-align:left;padding:11px 16px;border:1.5px solid #e2e8f0;border-radius:12px;cursor:pointer;background:#fff;margin-bottom:7px;transition:.15s;display:flex;align-items:center;gap:12px}
+.user-opt:hover{border-color:#93c5fd;background:#f8faff;box-shadow:0 2px 8px rgba(59,130,246,.1)}
+.user-opt.selected{border-color:#3b82f6;background:#eff6ff;box-shadow:0 2px 10px rgba(59,130,246,.15)}
+.user-opt-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#4338ca;flex-shrink:0}
+.user-opt.selected .user-opt-avatar{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff}
+.user-opt .uo-name{font-size:14px;font-weight:600;color:#1e293b}
+.user-opt .uo-role{font-size:11.5px;color:#94a3b8;margin-top:2px}
+
+/* ── NOTE BOX ────────────────────────────────────────────────── */
+.note-box{background:#f8fafc;border-radius:10px;padding:12px 14px;font-size:13px;color:#475569;margin-top:8px;line-height:1.6;border:1px solid #f1f5f9}
+
+/* ── DIVIDER ─────────────────────────────────────────────────── */
+.divider{font-size:11.5px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.07em;padding:5px 0;border-bottom:2px solid #f1f5f9;margin-bottom:14px;margin-top:22px;display:flex;align-items:center;gap:8px}
+.divider::before{content:'';width:4px;height:14px;background:linear-gradient(180deg,#3b82f6,#60a5fa);border-radius:4px;flex-shrink:0}
+
+/* ── EMPTY STATE ─────────────────────────────────────────────── */
+.empty{text-align:center;color:#94a3b8;font-size:13px;padding:40px 32px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.empty::before{content:'📭';font-size:32px;display:block;margin-bottom:4px}
+
+/* ── DOT ─────────────────────────────────────────────────────── */
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
+.dot-normal{background:#22c55e;box-shadow:0 0 0 2px rgba(34,197,94,.2)}
+.dot-broken{background:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,.2)}
+.dot-maintain{background:#eab308;box-shadow:0 0 0 2px rgba(234,179,8,.2)}
+.dot-pending{background:#818cf8;box-shadow:0 0 0 2px rgba(129,140,248,.2)}
+
+/* ── FILTER BAR ──────────────────────────────────────────────── */
+.filter-bar{display:flex;gap:10px;margin-bottom:18px;align-items:center;flex-wrap:wrap}
+.filter-bar select,.filter-bar input{padding:8px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;outline:none;background:#fff;color:#374151;transition:.15s}
+.filter-bar select:focus,.filter-bar input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+
+/* ── TABLE (Admin) ───────────────────────────────────────────── */
+table{border-collapse:collapse;width:100%}
+thead tr{background:linear-gradient(135deg,#f8fafc,#f1f5f9)}
+tbody tr{transition:.12s}
+tbody tr:hover{background:#f8faff}
+tbody tr:not(:last-child){border-bottom:1px solid #f1f5f9}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">SC</div>
+    <div class="login-title">SCCT Quản lý thiết bị</div>
+    <div class="login-sub">Hệ thống quản lý thiết bị cơ điện</div>
+    <div class="login-divider">Chọn tài khoản</div>
+    <div class="user-list-wrap"><div id="user-list"></div></div>
+    <button class="btn btn-primary" id="login-btn" style="width:100%;padding:12px;font-size:14px;margin-top:10px;letter-spacing:.02em" disabled>Đăng nhập</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;width:100%;min-height:100vh;flex-direction:row">
+  <div id="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo"><div class="sb-logo-icon">SC</div>SCCT</div>
+      <div class="sb-sub">Quản lý cơ điện</div>
+    </div>
+    <div class="sb-menu">
+      <div class="sb-label">Menu</div>
+      <div id="nav-buttons"></div>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user-info">
+        <div class="sb-avatar" id="sb-avatar"></div>
+        <div><div class="sb-name" id="sb-name"></div><div class="sb-role" id="sb-role"></div></div>
+      </div>
+      <button class="sb-logout" onclick="logout()">⎋ Đăng xuất</button>
+    </div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const ADMIN_USER = {id:'__admin__', name:'Quản trị viên', role:'admin', email:'admin@scct.vn'};
+const SEED_USERS = [
+  {id:'u1',name:'Nguyễn Văn An',  role:'tech',    email:'an@scct.vn'},
+  {id:'u2',name:'Trần Thị Bình',  role:'tech',    email:'binh@scct.vn'},
+  {id:'u3',name:'Lê Minh Cường',  role:'manager', email:'cuong@scct.vn'},
+  {id:'u4',name:'Phạm Quốc Dũng', role:'director',email:'dung@scct.vn'},
+];
+function load(key){ try{ return JSON.parse(localStorage.getItem('scct_'+key)||'[]'); }catch(e){ return []; } }
+function save(key,val){ localStorage.setItem('scct_'+key, JSON.stringify(val)); }
+let USERS = load('users');
+if(USERS.length===0){ USERS = [...SEED_USERS]; save('users', USERS); }
+const ROLE_LABEL = {
+  tech:           'Nhân viên kỹ thuật',
+  specialist:     'Chuyên viên cơ điện',
+  deputy_manager: 'Phó phòng kỹ thuật cơ điện',
+  manager:        'Trưởng phòng KT cơ điện',
+  director:       'Phó Tổng Giám Đốc',
+  admin:          'Quản trị viên',
+};
+const STATUS_LABEL = {normal:'Bình thường',broken:'Lỗi',maintain:'Đang bảo trì',pending:'Chờ linh kiện'};
+const STATUS_CLASS = {normal:'b-normal',broken:'b-broken',maintain:'b-maintain',pending:'b-pending'};
+const DOT_CLASS    = {normal:'dot-normal',broken:'dot-broken',maintain:'dot-maintain',pending:'dot-pending'};
+
+let sites   = load('sites');
+let devices = load('devices');
+let tickets = load('tickets');
+let reports = load('reports');
+const TODAY = '2026-06-28'; // DEMO: giả lập ngày 28/06/2026
+
+let currentUser = null;
+let currentTab  = '';
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function badge(status){return `<span class="badge ${STATUS_CLASS[status]||'b-normal'}">${STATUS_LABEL[status]||status}</span>`;}
+function getSite(id){return sites.find(s=>s.id===id)||{};}
+function getDevice(id){return devices.find(d=>d.id===id)||{};}
+function getUser(id){ if(id==='__admin__') return ADMIN_USER; return USERS.find(u=>u.id===id)||{}; }
+function nowTime(){return new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});}
+function uid(){return '_'+Math.random().toString(36).slice(2);}
+function fmtDate(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; }
+
+function hasOpenTicket(deviceId){
+  return tickets.some(t=>t.deviceId===deviceId&&t.deviceId!=='__other__'&&(t.status==='pending'||t.status==='in_progress'));
+}
+function getDeviceStatus(d){
+  return hasOpenTicket(d.id) ? 'broken' : (d.status||'normal');
+}
+function deviceBadge(d){ return badge(getDeviceStatus(d)); }
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────
+let selectedUserId = null;
+function initials(name){ return name.split(' ').filter(Boolean).slice(-2).map(w=>w[0].toUpperCase()).join(''); }
+function renderLogin(){
+  const el = document.getElementById('user-list');
+  const all = [...USERS, ADMIN_USER];
+  el.innerHTML = all.map(u=>`
+    <button class="user-opt" onclick="selectUser('${u.id}')">
+      <div class="user-opt-avatar">${initials(u.name)}</div>
+      <div><div class="uo-name">${u.name}</div><div class="uo-role">${ROLE_LABEL[u.role]||u.role}</div></div>
+    </button>`).join('');
+}
+function selectUser(id){
+  selectedUserId = id;
+  document.querySelectorAll('.user-opt').forEach(b=>b.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  document.getElementById('login-btn').disabled = false;
+}
+document.getElementById('login-btn').onclick = function(){
+  currentUser = selectedUserId==='__admin__' ? ADMIN_USER : USERS.find(u=>u.id===selectedUserId);
+  document.getElementById('login-screen').style.display='none';
+  const app = document.getElementById('app');
+  app.style.display='flex';
+  document.getElementById('sb-name').textContent = currentUser.name;
+  document.getElementById('sb-role').textContent = ROLE_LABEL[currentUser.role];
+  document.getElementById('sb-avatar').textContent = initials(currentUser.name);
+  const isTechRole    = ['tech','specialist','deputy_manager'].includes(currentUser.role);
+  const isManagerRole = currentUser.role==='manager';
+  const TAB_ICONS = {'my-devices':'🖥','issues':'🔧','history':'📋','monthly':'📊','overview':'📈','sites':'🏗','mdevices':'🖥','mtickets':'🔧','mreports':'📊','accounts':'👥','dashboard':'📈','dtickets':'🔧'};
+  const tabs = isTechRole
+    ? [['my-devices','Thiết bị của tôi'],['issues','Sự cố'],['history','Lịch sử'],['monthly','Báo cáo tháng']]
+    : isManagerRole
+    ? [['overview','Tổng quan'],['sites','Công trường'],['mdevices','Thiết bị'],['mtickets','Sự cố'],['mreports','BC Nhân viên']]
+    : currentUser.role==='admin'
+    ? [['accounts','Quản lý tài khoản']]
+    : [['dashboard','Dashboard'],['dtickets','Sự cố']];
+  document.getElementById('nav-buttons').innerHTML = tabs.map(([k,l])=>
+    `<button class="sb-btn" id="nav-${k}" onclick="switchTab('${k}')"><span class="sb-btn-icon">${TAB_ICONS[k]||'•'}</span>${l}</button>`).join('');
+  switchTab(tabs[0][0]);
+};
+function logout(){
+  currentUser=null; selectedUserId=null;
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-btn').disabled=true;
+  document.querySelectorAll('.user-opt').forEach(b=>b.classList.remove('selected'));
+  renderLogin();
+}
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+  const nb = document.getElementById('nav-'+tab);
+  if(nb) nb.classList.add('active');
+  renderPage();
+}
+
+// ── RENDER PAGE ───────────────────────────────────────────────────────────
+function renderPage(){
+  const c = document.getElementById('content');
+  const isTechRole    = ['tech','specialist','deputy_manager'].includes(currentUser.role);
+  const isManagerRole = currentUser.role==='manager';
+  if(isTechRole){
+    if(currentTab==='my-devices') c.innerHTML = pageMyDevices();
+    if(currentTab==='issues')     c.innerHTML = pageIssues();
+    if(currentTab==='history')    c.innerHTML = pageHistory();
+    if(currentTab==='monthly')    c.innerHTML = pageMyMonthly();
+  } else if(isManagerRole){
+    if(currentTab==='overview')  c.innerHTML = pageOverview();
+    if(currentTab==='sites')     c.innerHTML = pageSites();
+    if(currentTab==='mdevices')  c.innerHTML = pageManagerDevices();
+    if(currentTab==='mtickets')  c.innerHTML = pageManagerTickets();
+    if(currentTab==='mreports')  c.innerHTML = pageManagerReports();
+  } else if(currentUser.role==='admin'){
+    if(currentTab==='accounts') c.innerHTML = pageAdminAccounts();
+  } else {
+    if(currentTab==='dashboard') c.innerHTML = pageDashboard();
+    if(currentTab==='dtickets')  c.innerHTML = pageDirectorTickets();
+  }
+}
+
+// ══ ADMIN PAGES ══════════════════════════════════════════════════════════
+const ROLE_OPTIONS = [
+  {value:'tech',           label:'Nhân viên kỹ thuật'},
+  {value:'specialist',     label:'Chuyên viên cơ điện'},
+  {value:'deputy_manager', label:'Phó phòng kỹ thuật cơ điện'},
+  {value:'manager',        label:'Trưởng phòng KT cơ điện'},
+  {value:'director',       label:'Phó Tổng Giám Đốc'},
+];
+
+function pageAdminAccounts(){
+  const roleOpts = ROLE_OPTIONS.map(r=>`<option value="${r.value}">${r.label}</option>`).join('');
+  const rows = USERS.map(u=>`
+    <tr>
+      <td style="padding:10px 12px;font-weight:600;color:#1f2937">${u.name}</td>
+      <td style="padding:10px 12px;color:#374151">${ROLE_LABEL[u.role]||u.role}</td>
+      <td style="padding:10px 12px;color:#6b7280">${u.email||''}</td>
+      <td style="padding:10px 12px;text-align:right">
+        <button class="btn btn-outline" style="font-size:12px;padding:4px 12px;margin-right:4px" onclick="openEditUser('${u.id}')">Sửa</button>
+        <button class="btn" style="font-size:12px;padding:4px 12px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5" onclick="deleteUser('${u.id}')">Xóa</button>
+      </td>
+    </tr>`).join('');
+  return `
+    <div class="page-title">Quản lý tài khoản</div>
+    <div class="page-sub">${USERS.length} tài khoản (không kể tài khoản Admin)</div>
+
+    <!-- Form thêm mới -->
+    <div class="card card-p4" style="max-width:520px;margin-bottom:24px">
+      <div class="sec-title" style="margin-bottom:12px">+ Thêm tài khoản mới</div>
+      <div style="margin-bottom:10px">
+        <label class="form-label">Họ tên <span style="color:#ef4444">*</span></label>
+        <input class="form-ctrl" id="adm-name" placeholder="Nguyễn Văn A"/>
+      </div>
+      <div style="margin-bottom:10px">
+        <label class="form-label">Email</label>
+        <input class="form-ctrl" id="adm-email" placeholder="example@scct.vn"/>
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="form-label">Vai trò <span style="color:#ef4444">*</span></label>
+        <select class="form-ctrl" id="adm-role">${roleOpts}</select>
+      </div>
+      <button class="btn btn-primary" onclick="addUser()">Thêm tài khoản</button>
+    </div>
+
+    <!-- Bảng danh sách -->
+    <div style="max-width:720px;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+        <thead>
+          <tr style="background:#f3f4f6;border-bottom:2px solid #e5e7eb">
+            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;font-weight:600">HỌ TÊN</th>
+            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;font-weight:600">VAI TRÒ</th>
+            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;font-weight:600">EMAIL</th>
+            <th style="padding:10px 12px;text-align:right;font-size:12px;color:#6b7280;font-weight:600">THAO TÁC</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <!-- Modal sửa -->
+    <div id="edit-user-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center">
+      <div class="card card-p4" style="width:360px;max-width:95vw">
+        <div class="sec-title" style="margin-bottom:14px">Sửa tài khoản</div>
+        <input type="hidden" id="edit-uid"/>
+        <div style="margin-bottom:10px">
+          <label class="form-label">Họ tên <span style="color:#ef4444">*</span></label>
+          <input class="form-ctrl" id="edit-uname"/>
+        </div>
+        <div style="margin-bottom:10px">
+          <label class="form-label">Email</label>
+          <input class="form-ctrl" id="edit-uemail"/>
+        </div>
+        <div style="margin-bottom:16px">
+          <label class="form-label">Vai trò <span style="color:#ef4444">*</span></label>
+          <select class="form-ctrl" id="edit-urole">${roleOpts}</select>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="saveEditUser()">Lưu thay đổi</button>
+          <button class="btn btn-outline" onclick="document.getElementById('edit-user-modal').style.display='none'">Hủy</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function addUser(){
+  const name  = document.getElementById('adm-name').value.trim();
+  const email = document.getElementById('adm-email').value.trim();
+  const role  = document.getElementById('adm-role').value;
+  if(!name){ showAlert('Vui lòng nhập họ tên','info'); return; }
+  USERS.push({id:uid(), name, email, role});
+  save('users', USERS);
+  showAlert('Đã thêm tài khoản thành công','success');
+  setTimeout(()=>renderPage(), 800);
+}
+
+function openEditUser(id){
+  const u = USERS.find(x=>x.id===id); if(!u) return;
+  document.getElementById('edit-uid').value   = u.id;
+  document.getElementById('edit-uname').value = u.name;
+  document.getElementById('edit-uemail').value= u.email||'';
+  document.getElementById('edit-urole').value = u.role;
+  document.getElementById('edit-user-modal').style.display='flex';
+}
+
+function saveEditUser(){
+  const id    = document.getElementById('edit-uid').value;
+  const name  = document.getElementById('edit-uname').value.trim();
+  const email = document.getElementById('edit-uemail').value.trim();
+  const role  = document.getElementById('edit-urole').value;
+  if(!name){ showAlert('Vui lòng nhập họ tên','info'); return; }
+  USERS = USERS.map(u=>u.id===id ? {...u, name, email, role} : u);
+  save('users', USERS);
+  document.getElementById('edit-user-modal').style.display='none';
+  showAlert('Đã cập nhật tài khoản','success');
+  setTimeout(()=>renderPage(), 800);
+}
+
+function deleteUser(id){
+  if(!confirm('Xóa tài khoản này?')) return;
+  USERS = USERS.filter(u=>u.id!==id);
+  save('users', USERS);
+  renderPage();
+}
+
+// ══ MONTHLY REPORT ═══════════════════════════════════════════════════════
+function monthLabel(ym){ // 'YYYY-MM' → 'Tháng MM/YYYY'
+  const [y,m] = ym.split('-'); return `Tháng ${m}/${y}`;
+}
+function currentMonth(){ return TODAY.slice(0,7); }
+
+function monthStats(userId, ym){
+  const isAssigned = t => Array.isArray(t.assignedTo) ? t.assignedTo.includes(userId) : t.assignedTo===userId;
+  const inMonth    = (iso) => iso && iso.slice(0,7)===ym;
+  const assigned   = tickets.filter(t=>isAssigned(t) && inMonth(t.approvedDate||t.createdDate));
+  const resolved   = tickets.filter(t=>isAssigned(t) && t.status==='resolved' && inMonth(t.resolvedDate));
+  const open       = tickets.filter(t=>isAssigned(t) && (t.status==='pending'||t.status==='in_progress'));
+  return {assigned: assigned.length, resolved: resolved.length, open: open.length, assignedList: assigned, resolvedList: resolved};
+}
+
+function pageMyMonthly(){
+  reports = load('reports');
+  const ym    = currentMonth();
+  const stats = monthStats(currentUser.id, ym);
+  const myRep = reports.find(r=>r.userId===currentUser.id && r.month===ym);
+  const history = reports.filter(r=>r.userId===currentUser.id && r.month!==ym).sort((a,b)=>b.month.localeCompare(a.month));
+
+  const statCards = `
+    <div class="grid-4" style="margin-bottom:20px;max-width:640px">
+      <div class="stat-card" style="border-left-color:#2563eb"><div class="stat-val">${stats.assigned}</div><div class="stat-lbl">Được giao</div><div class="stat-sub">phiếu sự cố</div></div>
+      <div class="stat-card" style="border-left-color:#16a34a"><div class="stat-val">${stats.resolved}</div><div class="stat-lbl">Đã giải quyết</div><div class="stat-sub">trong tháng</div></div>
+      <div class="stat-card" style="border-left-color:#f59e0b"><div class="stat-val">${stats.open}</div><div class="stat-lbl">Đang mở</div><div class="stat-sub">chưa xử lý xong</div></div>
+      <div class="stat-card" style="border-left-color:#8b5cf6"><div class="stat-val">${stats.assigned>0?Math.round(stats.resolved/stats.assigned*100):0}%</div><div class="stat-lbl">Hoàn thành</div><div class="stat-sub">tỉ lệ giải quyết</div></div>
+    </div>`;
+
+  const formOrDone = myRep
+    ? `<div class="card card-p4" style="max-width:640px;margin-bottom:20px;border-left:4px solid #16a34a">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="sec-title" style="color:#16a34a">✓ Đã gửi báo cáo ${monthLabel(ym)}</div>
+          <span style="font-size:11px;color:#9ca3af">${fmtDate(myRep.submittedDate)}</span>
+        </div>
+        <div style="margin-bottom:8px"><div class="form-label">Tóm tắt công việc</div>
+          <div style="background:#f9fafb;border-radius:6px;padding:10px;font-size:13px;color:#374151;line-height:1.6">${myRep.summary||'(Không có)'}</div></div>
+        <div><div class="form-label">Tự đánh giá</div>
+          <div style="background:#f9fafb;border-radius:6px;padding:10px;font-size:13px;color:#374151;line-height:1.6">${myRep.selfRate||'(Không có)'}</div></div>
+        ${myRep.mgrComment?`<div style="margin-top:10px;background:#eff6ff;border-radius:6px;padding:10px"><div style="font-size:11px;font-weight:600;color:#2563eb;margin-bottom:4px">Nhận xét trưởng phòng</div><div style="font-size:13px;color:#1e40af">${myRep.mgrComment}</div></div>`:''}
+        <button class="btn btn-outline" style="margin-top:12px;font-size:12px" onclick="reopenMonthlyReport()">Chỉnh sửa lại</button>
+       </div>`
+    : `<div class="card card-p4" style="max-width:640px;margin-bottom:20px">
+        <div class="sec-title" style="margin-bottom:14px">Báo cáo ${monthLabel(ym)}</div>
+        <div style="margin-bottom:10px">
+          <label class="form-label">Tóm tắt công việc trong tháng <span style="color:#ef4444">*</span></label>
+          <textarea class="form-ctrl" id="rep-summary" rows="4" placeholder="Mô tả các công việc đã thực hiện trong tháng..."></textarea>
+        </div>
+        <div style="margin-bottom:14px">
+          <label class="form-label">Tự đánh giá kết quả</label>
+          <textarea class="form-ctrl" id="rep-selfrate" rows="2" placeholder="Đánh giá mức độ hoàn thành, khó khăn gặp phải..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="submitMonthlyReport()">Gửi báo cáo</button>
+       </div>`;
+
+  const histHtml = history.length===0 ? '' : `
+    <div class="sec-title" style="margin-bottom:10px">Báo cáo các tháng trước</div>
+    ${history.map(r=>{
+      const st = monthStats(currentUser.id, r.month);
+      return `<div class="card card-p" style="max-width:640px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:600;color:#1f2937">${monthLabel(r.month)}</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:2px">Được giao: ${st.assigned} &nbsp;·&nbsp; Giải quyết: ${st.resolved} &nbsp;·&nbsp; Hoàn thành: ${st.assigned>0?Math.round(st.resolved/st.assigned*100):0}%</div>
+          </div>
+          <button class="btn btn-outline" style="font-size:12px;padding:4px 12px" onclick="toggleHistRep('hr-${r.id}')">Xem</button>
+        </div>
+        <div id="hr-${r.id}" style="display:none;margin-top:10px;border-top:1px solid #e5e7eb;padding-top:10px">
+          <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Tóm tắt công việc</div>
+          <div style="font-size:13px;color:#374151;margin-bottom:8px">${r.summary||'(Không có)'}</div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Tự đánh giá</div>
+          <div style="font-size:13px;color:#374151">${r.selfRate||'(Không có)'}</div>
+          ${r.mgrComment?`<div style="margin-top:8px;background:#eff6ff;border-radius:6px;padding:8px"><div style="font-size:11px;font-weight:600;color:#2563eb;margin-bottom:2px">Nhận xét trưởng phòng</div><div style="font-size:13px;color:#1e40af">${r.mgrComment}</div></div>`:''}
+        </div>
+      </div>`;
+    }).join('')}`;
+
+  return `<div class="page-title">Báo cáo tháng</div>
+    <div class="page-sub">${monthLabel(ym)} &nbsp;·&nbsp; ${currentUser.name}</div>
+    <div id="alert-box"></div>
+    ${statCards}${formOrDone}${histHtml}`;
+}
+
+function submitMonthlyReport(){
+  const summary  = document.getElementById('rep-summary').value.trim();
+  const selfRate = document.getElementById('rep-selfrate').value.trim();
+  if(!summary){ showAlert('Vui lòng nhập tóm tắt công việc','info'); return; }
+  reports = load('reports');
+  const ym = currentMonth();
+  reports = reports.filter(r=>!(r.userId===currentUser.id && r.month===ym));
+  reports.push({id:uid(), userId:currentUser.id, month:ym, summary, selfRate, submittedDate:TODAY, mgrComment:''});
+  save('reports', reports);
+  showAlert('Đã gửi báo cáo tháng!','success');
+  setTimeout(()=>renderPage(), 800);
+}
+
+function reopenMonthlyReport(){
+  reports = load('reports');
+  const ym = currentMonth();
+  const r  = reports.find(r=>r.userId===currentUser.id&&r.month===ym);
+  if(!r) return;
+  // re-render with form pre-filled
+  const c = document.getElementById('content');
+  c.innerHTML = c.innerHTML; // trigger re-render with edit flag
+  const idx = reports.indexOf(r);
+  // Temporarily remove so pageMyMonthly shows form
+  reports = reports.filter(x=>x!==r);
+  c.innerHTML = pageMyMonthly();
+  document.getElementById('rep-summary').value  = r.summary||'';
+  document.getElementById('rep-selfrate').value = r.selfRate||'';
+  reports.push(r); // restore in memory but not save — save happens on submit
+}
+
+function toggleHistRep(id){
+  const el = document.getElementById(id);
+  if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+
+// ── MANAGER: xem báo cáo nhân viên ───────────────────────────────────────
+function pageManagerReports(){
+  reports = load('reports');
+  const techUsers = USERS.filter(u=>['tech','specialist','deputy_manager'].includes(u.role));
+  // Tháng hiển thị: lấy từ filter hoặc mặc định tháng hiện tại
+  const selMonth = window._repFilterMonth || currentMonth();
+  // Tạo danh sách tháng có báo cáo + tháng hiện tại
+  const months = [...new Set([currentMonth(), ...reports.map(r=>r.month)])].sort((a,b)=>b.localeCompare(a));
+  const monthOpts = months.map(m=>`<option value="${m}"${m===selMonth?' selected':''}>${monthLabel(m)}</option>`).join('');
+
+  const cards = techUsers.map(u=>{
+    const st  = monthStats(u.id, selMonth);
+    const rep = reports.find(r=>r.userId===u.id && r.month===selMonth);
+    const pct = st.assigned>0 ? Math.round(st.resolved/st.assigned*100) : 0;
+    const barColor = pct>=80?'#16a34a':pct>=50?'#f59e0b':'#ef4444';
+    return `<div class="card card-p4" style="max-width:700px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#1f2937">${u.name}</div>
+          <div style="font-size:12px;color:#6b7280">${ROLE_LABEL[u.role]}</div>
+        </div>
+        ${rep
+          ? `<span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#dcfce7;color:#16a34a">Đã nộp ${fmtDate(rep.submittedDate)}</span>`
+          : `<span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#fee2e2;color:#dc2626">Chưa nộp</span>`}
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+        <div style="text-align:center;background:#eff6ff;border-radius:8px;padding:8px 16px">
+          <div style="font-size:18px;font-weight:700;color:#2563eb">${st.assigned}</div>
+          <div style="font-size:11px;color:#6b7280">Được giao</div>
+        </div>
+        <div style="text-align:center;background:#f0fdf4;border-radius:8px;padding:8px 16px">
+          <div style="font-size:18px;font-weight:700;color:#16a34a">${st.resolved}</div>
+          <div style="font-size:11px;color:#6b7280">Giải quyết</div>
+        </div>
+        <div style="text-align:center;background:#fff7ed;border-radius:8px;padding:8px 16px">
+          <div style="font-size:18px;font-weight:700;color:#f59e0b">${st.open}</div>
+          <div style="font-size:11px;color:#6b7280">Đang mở</div>
+        </div>
+        <div style="flex:1;min-width:120px;display:flex;flex-direction:column;justify-content:center">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span style="color:#374151">Hoàn thành</span><span style="font-weight:700;color:${barColor}">${pct}%</span>
+          </div>
+          <div style="background:#e5e7eb;border-radius:20px;height:8px">
+            <div style="background:${barColor};width:${pct}%;height:8px;border-radius:20px;transition:.3s"></div>
+          </div>
+        </div>
+      </div>
+      ${rep ? `
+        <div style="background:#f9fafb;border-radius:8px;padding:10px;margin-bottom:8px">
+          <div style="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px">TÓM TẮT CÔNG VIỆC</div>
+          <div style="font-size:13px;color:#374151;line-height:1.6">${rep.summary||'(Không có)'}</div>
+          ${rep.selfRate?`<div style="font-size:11px;font-weight:600;color:#6b7280;margin:8px 0 4px">TỰ ĐÁNH GIÁ</div>
+          <div style="font-size:13px;color:#374151">${rep.selfRate}</div>`:''}
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <div style="flex:1">
+            <label class="form-label">Nhận xét trưởng phòng</label>
+            <textarea class="form-ctrl" id="mgr-cmt-${u.id}" rows="2" placeholder="Nhập nhận xét...">${rep.mgrComment||''}</textarea>
+          </div>
+          <button class="btn btn-primary" style="padding:6px 16px;white-space:nowrap" onclick="saveMgrComment('${u.id}','${selMonth}')">Lưu</button>
+        </div>` : `<div style="font-size:13px;color:#9ca3af;font-style:italic">Nhân viên chưa nộp báo cáo tháng này.</div>`}
+    </div>`;
+  }).join('');
+
+  return `<div class="page-title">Báo cáo nhân viên</div>
+    <div class="page-sub">Theo dõi tiến độ và báo cáo tháng</div>
+    <div id="alert-box"></div>
+    <div style="margin-bottom:20px;display:flex;align-items:center;gap:10px">
+      <label class="form-label" style="margin:0">Chọn tháng:</label>
+      <select class="form-ctrl" style="width:auto" onchange="window._repFilterMonth=this.value;renderPage()">${monthOpts}</select>
+    </div>
+    <div>${cards||'<div class="empty">Chưa có nhân viên nào</div>'}</div>`;
+}
+
+function saveMgrComment(userId, month){
+  reports = load('reports');
+  const cmt = (document.getElementById('mgr-cmt-'+userId)||{}).value||'';
+  reports = reports.map(r=>r.userId===userId&&r.month===month ? {...r, mgrComment:cmt} : r);
+  save('reports', reports);
+  showAlert('Đã lưu nhận xét','success');
+  setTimeout(()=>renderPage(), 600);
+}
+
+// ══ TECH PAGES ═══════════════════════════════════════════════════════════
+function myDeviceCard(d, s){
+  const thuy = isSiteThuy(d.siteId);
+  const ib   = thuy ? '' : inspectBadge(d.inspectExpiry);
+  const openCount = tickets.filter(t=>t.deviceId===d.id&&(t.status==='pending'||t.status==='in_progress')).length;
+  return `<div class="card card-p" style="margin-bottom:10px;max-width:640px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#1f2937">${d.name}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:2px">${d.type}</div>
+        ${d.regNo?`<div style="font-size:12px;color:#374151;margin-top:2px">Số đăng ký: <b>${d.regNo}</b></div>`:''}
+      </div>
+      ${deviceBadge(d)}
+    </div>
+    ${d.desc?`<div style="font-size:12px;color:#374151;background:#f9fafb;border-radius:6px;padding:7px 10px;margin-bottom:8px;line-height:1.5">${d.desc}</div>`:''}
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:${ib?'6px':'0'}">
+      <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#e0e7ff;color:#3730a3;font-weight:600">📍 ${s.name||'—'} &nbsp;·&nbsp; ${s.loc||''}</span>
+      ${s.type?`<span style="font-size:11px;padding:2px 8px;border-radius:20px;${SITE_TYPE_STYLE[s.type]||'background:#e5e7eb;color:#374151'};font-weight:600">${s.type}</span>`:''}
+      ${openCount>0?`<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#fee2e2;color:#dc2626;font-weight:600">${openCount} sự cố đang mở</span>`:''}
+    </div>
+    ${ib?`<div style="margin-top:4px">${ib}</div>`:''}
+  </div>`;
+}
+
+function pageMyDevices(){
+  const myD = devices.filter(d=>d.assignedTo===currentUser.id);
+  const mySiteIds = [...new Set(myD.map(d=>d.siteId).filter(Boolean))];
+  const mySites = sites.filter(s=>mySiteIds.includes(s.id));
+  let html = `<div class="page-title">Thiết bị của tôi</div><div class="page-sub">Được phân công quản lý ${myD.length} thiết bị</div>`;
+  if(myD.length===0){ return html+`<div class="empty" style="margin-top:40px">Chưa được phân công thiết bị nào</div>`; }
+  mySites.forEach(s=>{
+    const sd = myD.filter(d=>d.siteId===s.id);
+    html += `<div class="divider">${s.name} &nbsp;·&nbsp; ${s.loc||''}</div>`;
+    sd.forEach(d=>{ html += myDeviceCard(d, s); });
+  });
+  const unassigned = myD.filter(d=>!d.siteId);
+  if(unassigned.length>0){
+    html+=`<div class="divider">Chưa có công trường</div>`;
+    unassigned.forEach(d=>{ html += myDeviceCard(d, {}); });
+  }
+  return html;
+}
+
+// ── TICKET SYSTEM ────────────────────────────────────────────────────────
+
+function showAlert(msg,type){
+  const box = document.getElementById('alert-box');
+  if(box) box.innerHTML=`<div class="alert-${type}">${msg}</div>`;
+}
+
+// mode: 'view' | 'tech' | 'mgr-approve'
+function ticketCard(t, mode){
+  const isOther   = t.deviceId==='__other__';
+  const d = isOther ? {name: t.otherLabel||'Khác', type:''} : getDevice(t.deviceId);
+  const s = getSite(t.siteId);
+  const creator   = getUser(t.userId);
+  const assignees = Array.isArray(t.assignedTo) ? t.assignedTo.map(id=>getUser(id)) : (t.assignedTo ? [getUser(t.assignedTo)] : []);
+  const overdue  = t.dueDate && t.dueDate < TODAY && t.status==='in_progress';
+
+  const STATUS_BADGE = {
+    pending:     `<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fef9c3;color:#b45309">Chờ phê duyệt</span>`,
+    in_progress: `<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fee2e2;color:#dc2626">Đang thực hiện</span>`,
+    resolved:    `<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#dcfce7;color:#16a34a">Đã khắc phục</span>`,
+  };
+  const BORDER = {pending:'#f59e0b', in_progress:'#ef4444', resolved:'#16a34a'};
+  const dueBadge = t.dueDate
+    ? `<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:${overdue?'#fee2e2':'#f5f3ff'};color:${overdue?'#dc2626':'#7c3aed'};font-weight:600">${overdue?'⚠ Quá hạn ':'Dự kiến '}${fmtDate(t.dueDate)}</span>`
+    : '';
+
+  let updatesHtml = '';
+  if(t.updates && t.updates.length>0){
+    updatesHtml = `<div style="margin-top:8px;border-top:1px solid #f0f0f0;padding-top:8px">
+      <div style="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:6px">Cập nhật tiến độ</div>
+      ${t.updates.map(u=>`<div style="font-size:12px;color:#374151;padding:6px 10px;background:#f9fafb;border-radius:6px;margin-bottom:4px"><span style="color:#9ca3af">${fmtDate(u.date)} ${u.time}:</span> ${u.note}</div>`).join('')}
+    </div>`;
+  }
+
+  let actionsHtml = '';
+
+  if(mode==='tech'){
+    actionsHtml = `
+      <div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="openUpdateForm('${t.id}')">+ Cập nhật tiến độ</button>
+        <button class="btn btn-sm" style="background:#dcfce7;color:#16a34a;border:none;font-weight:600;border-radius:8px;padding:5px 12px;cursor:pointer" onclick="openResolveForm('${t.id}')">✓ Đã xử lý xong</button>
+      </div>
+      <div id="update-form-${t.id}" style="display:none;margin-top:10px">
+        <textarea class="form-ctrl" id="update-note-${t.id}" rows="2" placeholder="Mô tả tiến độ xử lý..."></textarea>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn btn-primary btn-sm" onclick="submitUpdate('${t.id}')">Lưu</button>
+          <button class="btn btn-outline btn-sm" onclick="closeUpdateForm('${t.id}')">Hủy</button>
+        </div>
+      </div>
+      <div id="resolve-form-${t.id}" style="display:none;margin-top:10px">
+        <textarea class="form-ctrl" id="resolve-note-${t.id}" rows="2" placeholder="Mô tả kết quả xử lý, linh kiện đã thay... (không bắt buộc)"></textarea>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn btn-sm" style="background:#16a34a;color:#fff;border:none;font-weight:600;border-radius:8px;padding:5px 12px;cursor:pointer" onclick="submitResolve('${t.id}')">Xác nhận hoàn thành</button>
+          <button class="btn btn-outline btn-sm" onclick="closeResolveForm('${t.id}')">Hủy</button>
+        </div>
+      </div>`;
+  }
+
+  if(mode==='mgr-approve'){
+    const techChecks = USERS.filter(u=>['tech','specialist','deputy_manager'].includes(u.role)).map(u=>
+      `<label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer;font-size:13px;color:#374151;background:#fff">
+        <input type="checkbox" id="chk-${t.id}-${u.id}" value="${u.id}" style="width:15px;height:15px;accent-color:#2563eb"/>
+        ${u.name}
+      </label>`).join('');
+    actionsHtml = `
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0">
+        ${t.plan?`<div style="margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Phương án đề xuất của nhân viên</div>
+          <div style="font-size:13px;color:#374151;padding:8px 12px;background:#fefce8;border:1px solid #fde68a;border-radius:8px;line-height:1.5">${t.plan}</div>
+        </div>`:''}
+        <div style="font-size:12px;font-weight:600;color:#1d4ed8;margin-bottom:8px;padding-top:4px">Phê duyệt & Phân công</div>
+        <div style="margin-bottom:8px">
+          <label class="form-label">Ý kiến / Phương án được duyệt <span style="font-weight:400;color:#6b7280">(không bắt buộc)</span></label>
+          <textarea class="form-ctrl" id="approve-plan-${t.id}" rows="2" placeholder="Ghi ý kiến, điều chỉnh hoặc xác nhận đồng ý phương án trên..."></textarea>
+        </div>
+        <div style="margin-bottom:8px">
+          <label class="form-label">Phân công thực hiện <span style="color:#ef4444">*</span> <span style="font-weight:400;color:#6b7280">(chọn một hoặc nhiều)</span></label>
+          <div style="display:flex;flex-direction:column;gap:6px">${techChecks}</div>
+        </div>
+        <div style="margin-bottom:10px">
+          <label class="form-label">Hạn hoàn thành</label>
+          <input type="date" class="form-ctrl" id="approve-due-${t.id}" value="${t.dueDate||''}" min="${TODAY}"/>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="submitApprove('${t.id}')">✓ Phê duyệt</button>
+        </div>
+      </div>`;
+  }
+
+  const assigneeRow = assignees.length>0
+    ? `<div style="font-size:12px;color:#374151;margin-top:6px;padding:5px 10px;background:#eff6ff;border-radius:6px"><span style="font-weight:600;color:#2563eb">Phân công:</span> ${assignees.map(u=>u.name).join(', ')}</div>`
+    : '';
+  const approvedPlanRow = (()=>{
+    let rows = '';
+    if(t.plan && mode!=='mgr-approve')
+      rows += `<div style="font-size:12px;color:#374151;margin-top:4px;padding:5px 10px;background:#fefce8;border:1px solid #fde68a;border-radius:6px"><span style="font-weight:600;color:#b45309">Đề xuất NV:</span> ${t.plan}</div>`;
+    if(t.approvedPlan)
+      rows += `<div style="font-size:12px;color:#374151;margin-top:4px;padding:5px 10px;background:#eff6ff;border-radius:6px"><span style="font-weight:600;color:#2563eb">Ý kiến TP:</span> ${t.approvedPlan}</div>`;
+    return rows;
+  })();
+
+  return `<div class="card card-p" style="margin-bottom:10px;max-width:660px;border-left:3px solid ${BORDER[t.status]||'#e5e7eb'}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#1f2937">${d.name||'—'}</div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:2px">${s.name||''} &nbsp;·&nbsp; Tạo bởi ${creator.name||''} &nbsp;·&nbsp; ${fmtDate(t.createdDate)}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;margin-left:10px">
+        ${dueBadge}
+        ${STATUS_BADGE[t.status]||''}
+        ${isOther?`<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#f3f4f6;color:#374151">Khác</span>`:''}
+      </div>
+    </div>
+    <div class="note-box">${t.description}</div>
+    ${approvedPlanRow}
+    ${assigneeRow}
+    ${t.resolveNote?`<div style="font-size:12px;color:#16a34a;margin-top:6px;padding:6px 10px;background:#f0fdf4;border-radius:6px"><span style="font-weight:600">Kết quả:</span> ${t.resolveNote}</div>`:''}
+    ${updatesHtml}
+    ${actionsHtml}
+  </div>`;
+}
+
+function pageIssues(){
+  const myD = devices.filter(d=>d.assignedTo===currentUser.id);
+  const myDevIds = myD.map(d=>d.id);
+  const pending    = tickets.filter(t=>myDevIds.includes(t.deviceId) && t.status==='pending');
+  const inProgress = tickets.filter(t=>t.status==='in_progress' && (Array.isArray(t.assignedTo)?t.assignedTo.includes(currentUser.id):t.assignedTo===currentUser.id));
+
+  let devOpts = `<option value="">-- Chọn thiết bị --</option>`;
+  myD.forEach(d=>{ const s=getSite(d.siteId); devOpts+=`<option value="${d.id}">${d.name} (${s.name||''})</option>`; });
+  devOpts += `<option value="__other__">── Khác (không phải thiết bị cụ thể) ──</option>`;
+
+  const pendingList = pending.length===0
+    ? `<div class="empty">Không có phiếu nào đang chờ</div>`
+    : pending.map(t=>ticketCard(t,'view')).join('');
+  const inProgressList = inProgress.length===0
+    ? `<div class="empty">Không có phiếu nào đang thực hiện</div>`
+    : inProgress.map(t=>ticketCard(t,'tech')).join('');
+
+  return `
+    <div class="page-title">Sự cố thiết bị</div>
+    <div class="page-sub">${pending.length} chờ phê duyệt &nbsp;·&nbsp; ${inProgress.length} đang thực hiện</div>
+    <div id="alert-box"></div>
+    <div class="card card-p4" style="max-width:540px;margin-bottom:24px">
+      <div class="sec-title" style="margin-bottom:12px">+ Tạo phiếu sự cố mới</div>
+      <div style="margin-bottom:10px">
+        <label class="form-label">Thiết bị / Đối tượng <span style="color:#ef4444">*</span></label>
+        <select class="form-ctrl" id="tk-device" onchange="onTicketDeviceChange()">${devOpts}</select>
+      </div>
+      <div id="tk-other-wrap" style="display:none;margin-bottom:10px">
+        <label class="form-label">Mô tả đối tượng <span style="color:#ef4444">*</span></label>
+        <input class="form-ctrl" id="tk-other-label" placeholder="VD: Vật tư, nhân lực, an toàn lao động, tài liệu..."/>
+      </div>
+      <div style="margin-bottom:10px">
+        <label class="form-label">Mô tả sự cố <span style="color:#ef4444">*</span></label>
+        <textarea class="form-ctrl" id="tk-desc" rows="3" placeholder="Mô tả chi tiết lỗi, triệu chứng..."></textarea>
+      </div>
+      <div style="margin-bottom:10px">
+        <label class="form-label">Đề xuất phương án</label>
+        <textarea class="form-ctrl" id="tk-plan" rows="2" placeholder="Hướng xử lý dự kiến (trưởng phòng sẽ phê duyệt)..."></textarea>
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="form-label">Dự kiến ngày hoàn thành</label>
+        <input type="date" class="form-ctrl" id="tk-due" min="${TODAY}"/>
+      </div>
+      <button class="btn btn-primary" onclick="submitTicket()">Gửi phiếu sự cố</button>
+    </div>
+    <div class="sec-title" style="margin-bottom:10px;color:#b45309">Chờ phê duyệt (${pending.length})</div>
+    <div style="max-width:660px">${pendingList}</div>
+    <div class="sec-title" style="margin-bottom:10px;margin-top:20px">Đang thực hiện (${inProgress.length})</div>
+    <div style="max-width:660px">${inProgressList}</div>`;
+}
+
+function onTicketDeviceChange(){
+  const val = document.getElementById('tk-device').value;
+  document.getElementById('tk-other-wrap').style.display = val==='__other__' ? 'block' : 'none';
+}
+
+function submitTicket(){
+  const deviceId   = document.getElementById('tk-device').value;
+  const desc       = document.getElementById('tk-desc').value.trim();
+  const plan       = document.getElementById('tk-plan').value.trim();
+  const dueDate    = document.getElementById('tk-due').value;
+  const otherLabel = (document.getElementById('tk-other-label')||{}).value?.trim()||'';
+  if(!deviceId){ showAlert('Vui lòng chọn thiết bị hoặc mục Khác','info'); return; }
+  if(deviceId==='__other__' && !otherLabel){ showAlert('Vui lòng mô tả đối tượng','info'); return; }
+  if(!desc){ showAlert('Vui lòng mô tả sự cố','info'); return; }
+  const d = deviceId==='__other__' ? {} : getDevice(deviceId);
+  tickets.push({
+    id:uid(), deviceId, siteId:d.siteId||'', userId:currentUser.id,
+    createdDate:TODAY, createdTime:nowTime(),
+    status:'pending', description:desc, plan, dueDate, updates:[],
+    otherLabel: deviceId==='__other__' ? otherLabel : '',
+  });
+  save('tickets',tickets);
+  showAlert('Đã gửi phiếu! Chờ trưởng phòng phê duyệt.','success');
+  setTimeout(()=>renderPage(),1500);
+}
+
+function submitApprove(tid){
+  const techIds = USERS.filter(u=>['tech','specialist','deputy_manager'].includes(u.role)).map(u=>u.id);
+  const assigned = techIds.filter(uid=>{ const el=document.getElementById('chk-'+tid+'-'+uid); return el&&el.checked; });
+  const approvedPlan= document.getElementById('approve-plan-'+tid).value.trim();
+  const dueDate     = document.getElementById('approve-due-'+tid).value;
+  if(assigned.length===0){ alert('Vui lòng chọn ít nhất một người thực hiện'); return; }
+  tickets = tickets.map(t=>t.id!==tid?t:{...t,status:'in_progress',assignedTo:assigned,approvedPlan,dueDate:dueDate||t.dueDate,approvedBy:currentUser.id,approvedDate:TODAY});
+  save('tickets',tickets);
+  renderPage();
+}
+
+function openUpdateForm(tid){ document.getElementById('update-form-'+tid).style.display='block'; document.getElementById('resolve-form-'+tid).style.display='none'; }
+function closeUpdateForm(tid){ document.getElementById('update-form-'+tid).style.display='none'; }
+function openResolveForm(tid){ document.getElementById('resolve-form-'+tid).style.display='block'; document.getElementById('update-form-'+tid).style.display='none'; }
+function closeResolveForm(tid){ document.getElementById('resolve-form-'+tid).style.display='none'; }
+
+function submitUpdate(tid){
+  const note = document.getElementById('update-note-'+tid).value.trim();
+  if(!note){ alert('Vui lòng nhập nội dung cập nhật'); return; }
+  tickets = tickets.map(t=>t.id!==tid?t:{...t,updates:[...(t.updates||[]),{note,date:TODAY,time:nowTime()}]});
+  save('tickets',tickets);
+  renderPage();
+}
+
+function submitResolve(tid){
+  const note = (document.getElementById('resolve-note-'+tid)||{}).value?.trim()||'';
+  tickets = tickets.map(x=>x.id!==tid?x:{...x,status:'resolved',resolvedDate:TODAY,resolveNote:note});
+  save('tickets',tickets);
+  renderPage();
+}
+
+function pageHistory(){
+  const myD = devices.filter(d=>d.assignedTo===currentUser.id);
+  const myDevIds = myD.map(d=>d.id);
+  const resolved = tickets.filter(t=>{
+    const isAssigned = Array.isArray(t.assignedTo)?t.assignedTo.includes(currentUser.id):t.assignedTo===currentUser.id;
+    return (myDevIds.includes(t.deviceId)||isAssigned) && t.status==='resolved';
+  }).sort((a,b)=>b.resolvedDate.localeCompare(a.resolvedDate));
+  if(resolved.length===0) return `<div class="page-title">Lịch sử sự cố</div><div class="empty" style="margin-top:40px">Chưa có sự cố nào đã giải quyết</div>`;
+  const months = [...new Set(resolved.map(t=>t.resolvedDate.slice(0,7)))];
+  let html = `<div class="page-title">Lịch sử sự cố</div><div class="page-sub">${resolved.length} sự cố đã khắc phục</div><div style="max-width:680px">`;
+  months.forEach((month,idx)=>{
+    const list = resolved.filter(t=>t.resolvedDate.startsWith(month));
+    const [y,m] = month.split('-');
+    const isOpen = idx===0;
+    html+=`<div style="border:1px solid #e5e7eb;border-radius:10px;margin-bottom:10px;overflow:hidden">
+      <div onclick="toggleGroup('hist-${month}')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f9fafb;cursor:pointer;user-select:none">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:13px;font-weight:600;color:#1f2937">Tháng ${m}/${y}</span>
+          <span style="font-size:11px;color:#9ca3af">${list.length} sự cố</span>
+          <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#dcfce7;color:#16a34a">Đã khắc phục</span>
+        </div>
+        <span id="arrow-hist-${month}" style="font-size:12px;color:#9ca3af;transition:.2s;transform:${isOpen?'rotate(90deg)':'rotate(0deg)'}">▶</span>
+      </div>
+      <div id="hist-${month}" style="display:${isOpen?'block':'none'};padding:10px 10px 6px">
+        ${list.map(t=>ticketCard(t,'view')).join('')}
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
+function toggleGroup(id){
+  const body=document.getElementById(id), arrow=document.getElementById('arrow-'+id);
+  if(!body) return;
+  const open=body.style.display==='none';
+  body.style.display=open?'block':'none';
+  if(arrow) arrow.style.transform=open?'rotate(90deg)':'rotate(0deg)';
+}
+
+// ══ MANAGER PAGES ════════════════════════════════════════════════════════
+function pageOverview(){
+  return pageDashboard();
+}
+
+const SITE_TYPES = ['Phương tiện thủy','Bốc xúc'];
+const SITE_TYPE_STYLE = {
+  'Phương tiện thủy': 'background:#dbeafe;color:#1d4ed8',
+  'Bốc xúc':         'background:#d1fae5;color:#065f46',
+};
+
+function siteInspectBadge(s){
+  if(s.type!=='Phương tiện thủy'||!s.inspectExpiry) return '';
+  const days = Math.ceil((new Date(s.inspectExpiry) - new Date(TODAY)) / 86400000);
+  if(days<0)  return `<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fee2e2;color:#dc2626">⚠ ĐK hết hạn ${fmtDate(s.inspectExpiry)}</span>`;
+  if(days<=30) return `<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fef9c3;color:#b45309">⚠ ĐK còn ${days} ngày (${fmtDate(s.inspectExpiry)})</span>`;
+  return `<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#dcfce7;color:#16a34a">ĐK đến ${fmtDate(s.inspectExpiry)}</span>`;
+}
+
+function siteRow(s){
+  const typeStyle = SITE_TYPE_STYLE[s.type]||'background:#f3f4f6;color:#6b7280';
+  const ib = siteInspectBadge(s);
+  return `<div style="padding:12px 16px;background:#fff;border-radius:10px;border:1px solid #f0f0f0;margin-bottom:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div class="ri-main">${s.name}${s.regNo?` <span style="font-size:11px;color:#6b7280;font-weight:400">(${s.regNo})</span>`:''}</div>
+        <div class="ri-sub">${s.loc||'—'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:10px">
+        <span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;${typeStyle}">${s.type||'Chưa phân loại'}</span>
+        <button class="btn btn-outline btn-sm" onclick="openEditSite('${s.id}')">Sửa</button>
+        <button class="btn-danger" onclick="deleteSite('${s.id}')">Xóa</button>
+      </div>
+    </div>
+    ${ib?`<div style="margin-top:6px">${ib}</div>`:''}
+  </div>`;
+}
+
+function pageSites(){
+  const byType = SITE_TYPES.map(t=>({type:t, list:sites.filter(s=>s.type===t)}));
+  const noType = sites.filter(s=>!s.type);
+
+  let rows = byType.map(({type,list})=>{
+    if(list.length===0) return '';
+    return `<div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #e5e7eb">${type}</div>
+      ${list.map(s=>siteRow(s)).join('')}
+    </div>`;
+  }).join('');
+
+  if(noType.length>0){
+    rows += `<div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:#ef4444;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #fecaca">Chưa phân loại</div>
+      ${noType.map(s=>siteRow(s)).join('')}
+    </div>`;
+  }
+
+  if(sites.length===0) rows = `<div class="empty">Chưa có công trường nào</div>`;
+
+  const typeOpts2 = SITE_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('');
+
+  return `
+    <div class="page-title">Quản lý công trường</div>
+    <div class="page-sub" style="margin-bottom:16px">Thêm và quản lý các công trường</div>
+    <div class="card card-p4" style="max-width:520px;margin-bottom:20px">
+      <div class="sec-title" style="margin-bottom:12px">Thêm công trường mới</div>
+      <div style="margin-bottom:10px"><label class="form-label">Tên công trường</label>
+        <input class="form-ctrl" id="site-name" placeholder="VD: Tàu Phú Quốc 01"/></div>
+      <div class="grid-2" style="margin-bottom:10px">
+        <div><label class="form-label">Địa điểm</label>
+          <input class="form-ctrl" id="site-loc" placeholder="VD: TP.HCM"/></div>
+        <div><label class="form-label">Loại công trường</label>
+          <select class="form-ctrl" id="site-type" onchange="toggleSiteExtra('site-extra',this.value)">${typeOpts2}</select></div>
+      </div>
+      <div id="site-extra" style="display:none;border-top:1px dashed #e5e7eb;padding-top:10px;margin-bottom:10px">
+        <div class="grid-2">
+          <div><label class="form-label">Số đăng ký</label>
+            <input class="form-ctrl" id="site-regno" placeholder="VD: VN-1234"/></div>
+          <div><label class="form-label">Ngày hết hạn đăng kiểm</label>
+            <input type="date" class="form-ctrl" id="site-inspect"/></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addSite()">+ Thêm công trường</button>
+    </div>
+
+    <!-- Modal sửa công trường -->
+    <div id="edit-site-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center">
+      <div class="card card-p4" style="width:100%;max-width:460px;margin:20px">
+        <div class="sec-title" style="margin-bottom:14px">Chỉnh sửa công trường</div>
+        <input type="hidden" id="edit-site-id"/>
+        <div style="margin-bottom:10px"><label class="form-label">Tên công trường</label>
+          <input class="form-ctrl" id="edit-site-name"/></div>
+        <div class="grid-2" style="margin-bottom:10px">
+          <div><label class="form-label">Địa điểm</label>
+            <input class="form-ctrl" id="edit-site-loc"/></div>
+          <div><label class="form-label">Loại công trường</label>
+            <select class="form-ctrl" id="edit-site-type" onchange="toggleSiteExtra('edit-site-extra',this.value)">${typeOpts2}</select></div>
+        </div>
+        <div id="edit-site-extra" style="display:none;border-top:1px dashed #e5e7eb;padding-top:10px;margin-bottom:10px">
+          <div class="grid-2">
+            <div><label class="form-label">Số đăng ký</label>
+              <input class="form-ctrl" id="edit-site-regno" placeholder="VD: VN-1234"/></div>
+            <div><label class="form-label">Ngày hết hạn đăng kiểm</label>
+              <input type="date" class="form-ctrl" id="edit-site-inspect"/></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn btn-primary" onclick="saveEditSite()">Lưu thay đổi</button>
+          <button class="btn btn-outline" onclick="closeEditSite()">Hủy</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="max-width:640px">
+      <div class="sec-title" style="margin-bottom:12px">Danh sách công trường (${sites.length})</div>
+      ${rows}
+    </div>`;
+}
+
+function toggleSiteExtra(boxId, type){
+  const box = document.getElementById(boxId);
+  if(box) box.style.display = type==='Phương tiện thủy' ? 'block' : 'none';
+}
+function addSite(){
+  const name  = document.getElementById('site-name').value.trim();
+  const loc   = document.getElementById('site-loc').value.trim();
+  const type  = document.getElementById('site-type').value;
+  if(!name){ alert('Vui lòng nhập tên công trường'); return; }
+  const entry = {id:uid(),name,loc:loc||'—',type};
+  if(type==='Phương tiện thủy'){
+    entry.regNo         = document.getElementById('site-regno').value.trim();
+    entry.inspectExpiry = document.getElementById('site-inspect').value;
+  }
+  sites.push(entry);
+  save('sites',sites);
+  renderPage();
+}
+function openEditSite(id){
+  const s = sites.find(x=>x.id===id);
+  if(!s) return;
+  document.getElementById('edit-site-id').value     = id;
+  document.getElementById('edit-site-name').value   = s.name;
+  document.getElementById('edit-site-loc').value    = s.loc||'';
+  document.getElementById('edit-site-type').value   = s.type||SITE_TYPES[0];
+  document.getElementById('edit-site-regno').value  = s.regNo||'';
+  document.getElementById('edit-site-inspect').value= s.inspectExpiry||'';
+  toggleSiteExtra('edit-site-extra', s.type);
+  document.getElementById('edit-site-modal').style.display='flex';
+}
+function closeEditSite(){
+  document.getElementById('edit-site-modal').style.display='none';
+}
+function saveEditSite(){
+  const id   = document.getElementById('edit-site-id').value;
+  const type = document.getElementById('edit-site-type').value;
+  sites = sites.map(s=> s.id!==id ? s : {
+    ...s,
+    name:          document.getElementById('edit-site-name').value.trim()||s.name,
+    loc:           document.getElementById('edit-site-loc').value.trim()||'—',
+    type,
+    regNo:         type==='Phương tiện thủy' ? document.getElementById('edit-site-regno').value.trim() : '',
+    inspectExpiry: type==='Phương tiện thủy' ? document.getElementById('edit-site-inspect').value : '',
+  });
+  save('sites',sites);
+  closeEditSite();
+  renderPage();
+}
+function deleteSite(id){
+  if(!confirm('Xóa công trường này?')) return;
+  sites = sites.filter(s=>s.id!==id);
+  devices = devices.map(d=>d.siteId===id?{...d,siteId:''}:d);
+  save('sites',sites); save('devices',devices);
+  renderPage();
+}
+
+function typeOpts(sel){
+  return ['Máy phát điện','Cẩu','Máy khoan','Xe vận chuyển','Khác']
+    .map(t=>`<option${t===sel?' selected':''}>${t}</option>`).join('');
+}
+function statusOpts2(sel){
+  return Object.entries(STATUS_LABEL).map(([k,v])=>`<option value="${k}"${k===sel?' selected':''}>${v}</option>`).join('');
+}
+function siteOptsHtml(sel){
+  return `<option value="">-- Chọn công trường --</option>`+sites.map(s=>`<option value="${s.id}"${s.id===sel?' selected':''}>${s.name}</option>`).join('');
+}
+function techOptsHtml(sel){
+  return `<option value="">-- Chưa phân công --</option>`+USERS.filter(u=>['tech','specialist','deputy_manager'].includes(u.role)).map(u=>`<option value="${u.id}"${u.id===sel?' selected':''}>${u.name}</option>`).join('');
+}
+
+function pageManagerDevices(){
+  // Nhóm thiết bị theo công trường
+  const grouped = sites.map(s=>({
+    site: s,
+    devs: devices.filter(d=>d.siteId===s.id)
+  }));
+  const unassigned = devices.filter(d=>!d.siteId||!sites.find(s=>s.id===d.siteId));
+
+  let siteBlocks = grouped.map(({site,devs})=>{
+    const sid = site.id;
+    const issues   = devs.filter(d=>hasOpenTicket(d.id)).length;
+    const expired  = devs.filter(d=>{ if(!d.inspectExpiry) return false; return new Date(d.inspectExpiry)<new Date(); }).length;
+    const expiring = devs.filter(d=>{ if(!d.inspectExpiry) return false; const days=Math.ceil((new Date(d.inspectExpiry)-new Date())/(86400000)); return days>=0&&days<=30; }).length;
+    const devRows = devs.length===0
+      ? `<div style="font-size:12px;color:#9ca3af;padding:10px 4px">Chưa có thiết bị nào tại công trường này</div>`
+      : devs.map(d=>deviceRow(d)).join('');
+    return `
+      <div style="margin-bottom:8px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+        <div onclick="toggleSite('${sid}')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f8fafc;cursor:pointer;user-select:none">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span id="arrow-${sid}" style="font-size:12px;color:#6b7280;transition:.2s">▶</span>
+            <div>
+              <span style="font-size:14px;font-weight:700;color:#1e3a5f">${site.name}</span>
+              ${site.type?`<span style="font-size:11px;font-weight:600;padding:1px 8px;border-radius:20px;${SITE_TYPE_STYLE[site.type]||'background:#e5e7eb;color:#374151'}">${site.type}</span>`:'' }
+              <span style="font-size:12px;color:#9ca3af">${site.loc}</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+            ${issues>0?`<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fee2e2;color:#dc2626">${issues} sự cố</span>`:''}
+            ${expired>0?`<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fca5a5;color:#7f1d1d">⚠ ${expired} ĐK hết hạn</span>`:''}
+            ${expiring>0?`<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fef9c3;color:#b45309">⚠ ${expiring} ĐK sắp hết</span>`:''}
+            <span style="font-size:12px;color:#6b7280;background:#e5e7eb;padding:2px 8px;border-radius:20px">${devs.length} thiết bị</span>
+          </div>
+        </div>
+        <div id="site-body-${sid}" style="display:none;padding:12px 16px;border-top:1px solid #e5e7eb">
+          ${devRows}
+        </div>
+      </div>`;
+  }).join('');
+
+  if(unassigned.length>0){
+    siteBlocks += `
+      <div style="margin-bottom:8px;border:1px solid #fde68a;border-radius:10px;overflow:hidden">
+        <div onclick="toggleSite('__none__')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fffbeb;cursor:pointer;user-select:none">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span id="arrow-__none__" style="font-size:12px;color:#6b7280">▶</span>
+            <span style="font-size:14px;font-weight:700;color:#92400e">Chưa phân công công trường</span>
+          </div>
+          <span style="font-size:12px;color:#6b7280;background:#fde68a;padding:2px 8px;border-radius:20px">${unassigned.length} thiết bị</span>
+        </div>
+        <div id="site-body-__none__" style="display:none;padding:12px 16px;border-top:1px solid #fde68a">
+          ${unassigned.map(d=>deviceRow(d)).join('')}
+        </div>
+      </div>`;
+  }
+
+  if(sites.length===0) siteBlocks = `<div class="empty">Chưa có công trường nào. Vui lòng thêm công trường trước.</div>`;
+  else if(devices.length===0) siteBlocks = grouped.map(({site})=>`
+    <div style="margin-bottom:8px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden">
+      <div onclick="toggleSite('${site.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f8fafc;cursor:pointer;user-select:none">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span id="arrow-${site.id}" style="font-size:12px;color:#6b7280">▶</span>
+          <span style="font-size:14px;font-weight:700;color:#1e3a5f">${site.name}</span>
+          <span style="font-size:12px;color:#9ca3af">${site.loc}</span>
+        </div>
+        <span style="font-size:12px;color:#6b7280;background:#e5e7eb;padding:2px 8px;border-radius:20px">0 thiết bị</span>
+      </div>
+      <div id="site-body-${site.id}" style="display:none;padding:12px 16px;border-top:1px solid #e5e7eb">
+        <div style="font-size:12px;color:#9ca3af">Chưa có thiết bị nào</div>
+      </div>
+    </div>`).join('');
+
+  return `
+    <div class="page-title">Quản lý thiết bị</div>
+    <div class="page-sub">Thiết bị được nhóm theo công trường</div>
+
+    <!-- Form thêm -->
+    <div class="card card-p4" style="max-width:600px;margin-bottom:24px">
+      <div class="sec-title" style="margin-bottom:12px">+ Thêm thiết bị mới</div>
+      <div style="margin-bottom:10px"><label class="form-label">Tên thiết bị</label>
+        <input class="form-ctrl" id="dv-name" placeholder="VD: Máy phát điện Cummins 200kVA"/></div>
+      <div class="grid-2" style="margin-bottom:10px">
+        <div><label class="form-label">Loại máy</label>
+          <select class="form-ctrl" id="dv-type">${typeOpts('')}</select></div>
+        <div><label class="form-label">Trạng thái ban đầu</label>
+          <select class="form-ctrl" id="dv-status"><option value="normal">Bình thường</option><option value="maintain">Sửa chữa</option></select></div>
+      </div>
+      <div class="grid-2" style="margin-bottom:10px">
+        <div><label class="form-label">Công trường</label>
+          <select class="form-ctrl" id="dv-site" onchange="toggleDeviceExtra('dv-extra',this.value)">${siteOptsHtml('')}</select></div>
+        <div><label class="form-label">Phân công NV</label>
+          <select class="form-ctrl" id="dv-tech">${techOptsHtml('')}</select></div>
+      </div>
+      <div id="dv-extra" style="display:none;border-top:1px dashed #e5e7eb;padding-top:10px;margin-bottom:10px">
+        <div class="grid-2">
+          <div><label class="form-label">Số đăng ký</label>
+            <input class="form-ctrl" id="dv-regno" placeholder="VD: 51H-12345"/></div>
+          <div><label class="form-label">Ngày hết hạn đăng kiểm</label>
+            <input type="date" class="form-ctrl" id="dv-inspect"/></div>
+        </div>
+      </div>
+      <div style="margin-bottom:12px"><label class="form-label">Mô tả / Đặc điểm thiết bị</label>
+        <textarea class="form-ctrl" id="dv-desc" rows="3" placeholder="VD: Công suất 200kVA, năm sản xuất 2020, số series ABC123..."></textarea></div>
+      <button class="btn btn-primary" onclick="addDevice()">Thêm thiết bị</button>
+    </div>
+
+    <!-- Modal sửa (ẩn mặc định) -->
+    <div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;overflow-y:auto">
+      <div class="card card-p4" style="width:100%;max-width:520px;margin:20px">
+        <div class="sec-title" style="margin-bottom:14px">Chỉnh sửa thiết bị</div>
+        <input type="hidden" id="edit-id"/>
+        <div style="margin-bottom:10px"><label class="form-label">Tên thiết bị</label>
+          <input class="form-ctrl" id="edit-name"/></div>
+        <div class="grid-2" style="margin-bottom:10px">
+          <div><label class="form-label">Loại máy</label><select class="form-ctrl" id="edit-type"></select></div>
+          <div><label class="form-label">Trạng thái</label><select class="form-ctrl" id="edit-status"></select></div>
+        </div>
+        <div class="grid-2" style="margin-bottom:10px">
+          <div><label class="form-label">Công trường</label>
+            <select class="form-ctrl" id="edit-site" onchange="toggleDeviceExtra('edit-extra',this.value)"></select></div>
+          <div><label class="form-label">Phân công NV</label>
+            <select class="form-ctrl" id="edit-tech"></select></div>
+        </div>
+        <div id="edit-extra" style="display:none;border-top:1px dashed #e5e7eb;padding-top:10px;margin-bottom:10px">
+          <div class="grid-2">
+            <div><label class="form-label">Số đăng ký</label>
+              <input class="form-ctrl" id="edit-regno" placeholder="VD: 51H-12345"/></div>
+            <div><label class="form-label">Ngày hết hạn đăng kiểm</label>
+              <input type="date" class="form-ctrl" id="edit-inspect"/></div>
+          </div>
+        </div>
+        <div style="margin-bottom:12px"><label class="form-label">Mô tả / Đặc điểm thiết bị</label>
+          <textarea class="form-ctrl" id="edit-desc" rows="3" placeholder="VD: Công suất 200kVA, năm sản xuất 2020..."></textarea></div>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="btn btn-primary" onclick="saveDevice()">Lưu thay đổi</button>
+          <button class="btn btn-outline" onclick="closeEditModal()">Hủy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danh sách theo công trường -->
+    <div style="max-width:700px">${siteBlocks}</div>`;
+}
+
+function inspectBadge(expiry){
+  if(!expiry) return '';
+  const days = Math.ceil((new Date(expiry) - new Date(TODAY)) / 86400000);
+  if(days<0)  return `<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fee2e2;color:#dc2626">⚠ Đăng kiểm hết hạn ${fmtDate(expiry)}</span>`;
+  if(days<=30) return `<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fef9c3;color:#b45309">⚠ ĐK còn ${days} ngày (${fmtDate(expiry)})</span>`;
+  return `<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#dcfce7;color:#16a34a">ĐK đến ${fmtDate(expiry)}</span>`;
+}
+
+function deviceRow(d){
+  const u    = getUser(d.assignedTo);
+  const thuy = isSiteThuy(d.siteId);
+  const ib   = thuy ? '' : inspectBadge(d.inspectExpiry);
+  const regNo= thuy ? '' : (d.regNo ? ` <span style="font-size:11px;color:#6b7280;font-weight:400">(${d.regNo})</span>` : '');
+  return `<div style="padding:10px 14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:#1f2937">${d.name}${regNo}</div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:2px">${d.type} &nbsp;·&nbsp; ${u.name||'Chưa phân công'}</div>
+        ${d.desc?`<div style="font-size:11px;color:#6b7280;margin-top:3px">${d.desc}</div>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:10px">
+        ${deviceBadge(d)}
+        <button class="btn btn-outline btn-sm" onclick="openEditModal('${d.id}')">Sửa</button>
+        <button class="btn-danger" onclick="deleteDevice('${d.id}')">Xóa</button>
+      </div>
+    </div>
+    ${ib?`<div style="margin-top:6px">${ib}</div>`:''}
+  </div>`;
+}
+
+function isSiteThuy(siteId){
+  const s = getSite(siteId);
+  return s && s.type === 'Phương tiện thủy';
+}
+function toggleDeviceExtra(boxId, siteId){
+  const box = document.getElementById(boxId);
+  if(box) box.style.display = isSiteThuy(siteId) ? 'none' : 'block';
+}
+
+function openEditModal(id){
+  const d = getDevice(id);
+  document.getElementById('edit-id').value          = id;
+  document.getElementById('edit-name').value        = d.name;
+  document.getElementById('edit-regno').value       = d.regNo||'';
+  document.getElementById('edit-inspect').value     = d.inspectExpiry||'';
+  document.getElementById('edit-desc').value        = d.desc||'';
+  document.getElementById('edit-type').innerHTML    = typeOpts(d.type);
+  document.getElementById('edit-status').innerHTML  = statusOpts2(d.status);
+  document.getElementById('edit-site').innerHTML    = siteOptsHtml(d.siteId);
+  document.getElementById('edit-tech').innerHTML    = techOptsHtml(d.assignedTo);
+  toggleDeviceExtra('edit-extra', d.siteId);
+  document.getElementById('edit-modal').style.display='flex';
+}
+function closeEditModal(){
+  document.getElementById('edit-modal').style.display='none';
+}
+function saveDevice(){
+  const id     = document.getElementById('edit-id').value;
+  const siteId = document.getElementById('edit-site').value;
+  const thuy   = isSiteThuy(siteId);
+  devices = devices.map(d=> d.id!==id ? d : {
+    ...d,
+    name:          document.getElementById('edit-name').value.trim(),
+    regNo:         thuy ? '' : document.getElementById('edit-regno').value.trim(),
+    inspectExpiry: thuy ? '' : document.getElementById('edit-inspect').value,
+    desc:          document.getElementById('edit-desc').value.trim(),
+    type:          document.getElementById('edit-type').value,
+    status:        document.getElementById('edit-status').value,
+    siteId,
+    assignedTo:    document.getElementById('edit-tech').value,
+  });
+  save('devices',devices);
+  closeEditModal();
+  renderPage();
+}
+
+function addDevice(){
+  const name   = document.getElementById('dv-name').value.trim();
+  const siteId = document.getElementById('dv-site').value;
+  const thuy   = isSiteThuy(siteId);
+  if(!name){ alert('Vui lòng nhập tên thiết bị'); return; }
+  devices.push({
+    id:uid(), name,
+    regNo:         thuy ? '' : document.getElementById('dv-regno').value.trim(),
+    inspectExpiry: thuy ? '' : document.getElementById('dv-inspect').value,
+    desc:          document.getElementById('dv-desc').value.trim(),
+    type:          document.getElementById('dv-type').value,
+    status:        document.getElementById('dv-status').value,
+    siteId,
+    assignedTo:    document.getElementById('dv-tech').value,
+  });
+  save('devices',devices);
+  renderPage();
+}
+function deleteDevice(id){
+  if(!confirm('Xóa thiết bị này?')) return;
+  devices = devices.filter(d=>d.id!==id);
+  save('devices',devices);
+  renderPage();
+}
+
+function pageManagerTickets(){
+  const pending     = tickets.filter(t=>t.status==='pending');
+  const inProgress  = tickets.filter(t=>t.status==='in_progress');
+  const resolvedToday = tickets.filter(t=>t.status==='resolved'&&t.resolvedDate===TODAY);
+
+  const pendingRows = pending.length===0
+    ? `<div class="empty">Không có phiếu nào chờ phê duyệt</div>`
+    : pending.map(t=>ticketCard(t,'mgr-approve')).join('');
+  const inProgressRows = inProgress.length===0
+    ? `<div class="empty">Không có phiếu nào đang thực hiện</div>`
+    : inProgress.map(t=>ticketCard(t,'view')).join('');
+  const resolvedRows = resolvedToday.length===0 ? '' : `
+    <div class="sec-title" style="margin-bottom:10px;margin-top:24px;color:#16a34a">✓ Đã khắc phục hôm nay (${resolvedToday.length})</div>
+    <div style="max-width:680px">${resolvedToday.map(t=>ticketCard(t,'view')).join('')}</div>`;
+
+  return `
+    <div class="page-title">Quản lý sự cố</div>
+    <div class="page-sub">${pending.length} chờ phê duyệt &nbsp;·&nbsp; ${inProgress.length} đang thực hiện &nbsp;·&nbsp; ${resolvedToday.length} khắc phục hôm nay</div>
+    <div class="sec-title" style="margin-bottom:10px;color:#b45309">Chờ phê duyệt (${pending.length})</div>
+    <div style="max-width:680px">${pendingRows}</div>
+    <div class="sec-title" style="margin-bottom:10px;margin-top:24px">Đang thực hiện (${inProgress.length})</div>
+    <div style="max-width:680px">${inProgressRows}</div>
+    ${resolvedRows}`;
+}
+
+// ══ DIRECTOR PAGES ════════════════════════════════════════════════════════
+function pageDashboard(){
+  const openTickets    = tickets.filter(t=>t.status==='pending'||t.status==='in_progress');
+  const resolvedToday  = tickets.filter(t=>t.status==='resolved'&&t.resolvedDate===TODAY);
+  const overdue        = tickets.filter(t=>t.status==='in_progress'&&t.dueDate&&t.dueDate<TODAY);
+  const total   = devices.length;
+  const okCount = devices.filter(d=>!hasOpenTicket(d.id)).length;
+  const pct     = total ? Math.round(okCount/total*100) : 0;
+
+  let stats = [
+    {val:total,               lbl:'Tổng thiết bị',     sub:`${sites.length} công trường`,     color:'#2563eb'},
+    {val:pct+'%',             lbl:'Hoạt động tốt',     sub:`${okCount}/${total} thiết bị`,    color:'#22c55e'},
+    {val:openTickets.length,  lbl:'Sự cố đang mở',     sub:`${overdue.length} quá hạn`,       color:'#ef4444'},
+    {val:resolvedToday.length,lbl:'Khắc phục hôm nay', sub:'đã hoàn thành',                   color:'#16a34a'},
+  ].map(s=>`<div class="stat-card" style="border-left-color:${s.color}">
+    <div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div><div class="stat-sub">${s.sub}</div>
+  </div>`).join('');
+
+  let siteCols = sites.map(s=>{
+    const sd = devices.filter(d=>d.siteId===s.id);
+    const ok = sd.filter(d=>!hasOpenTicket(d.id)).length;
+    const bad= sd.length - ok;
+    const pct2 = sd.length ? Math.round(ok/sd.length*100) : 100;
+    return `<div class="card card-p" style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:13px;font-weight:500;color:#1f2937">${s.name}</div>
+        <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${bad>0?'#fee2e2':'#dcfce7'};color:${bad>0?'#dc2626':'#16a34a'}">${bad>0?bad+' sự cố':'Tốt'}</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-bar" style="width:${pct2}%"></div></div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:4px">${ok}/${sd.length} thiết bị hoạt động tốt</div>
+    </div>`;
+  }).join('');
+
+  let issueList = openTickets.length===0
+    ? `<div class="empty">Không có sự cố nào đang mở</div>`
+    : openTickets.map(t=>ticketCard(t,'view')).join('');
+
+  let resolvedList = resolvedToday.length===0 ? '' : `
+    <div class="sec-title" style="margin-bottom:10px;margin-top:16px;color:#16a34a">✓ Đã khắc phục hôm nay (${resolvedToday.length})</div>
+    ${resolvedToday.map(t=>ticketCard(t,'view')).join('')}`;
+
+  return `
+    <div class="page-title">Dashboard tổng hợp</div>
+    <div class="page-sub">${fmtDate(TODAY)}</div>
+    <div class="grid-4" style="margin-bottom:24px">${stats}</div>
+    <div class="grid-2">
+      <div>
+        <div class="sec-title" style="margin-bottom:10px">Theo công trường</div>
+        ${siteCols||'<div class="empty">Chưa có công trường</div>'}
+      </div>
+      <div>
+        <div class="sec-title" style="margin-bottom:10px">Sự cố đang xử lý (${openTickets.length})</div>
+        ${issueList}
+        ${resolvedList}
+      </div>
+    </div>`;
+}
+
+function pageDirectorTickets(){
+  const openTickets = tickets.filter(t=>t.status==='pending'||t.status==='in_progress');
+  const resolvedAll = tickets.filter(t=>t.status==='resolved');
+  const overdue     = tickets.filter(t=>t.status==='in_progress'&&t.dueDate&&t.dueDate<TODAY);
+  let siteOpts = `<option value="">Tất cả công trường</option>`+sites.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  let techOpts = `<option value="">Tất cả nhân viên</option>`+USERS.filter(u=>['tech','specialist','deputy_manager'].includes(u.role)).map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+  let rows = openTickets.length===0
+    ? `<div class="empty">Không có sự cố nào đang mở</div>`
+    : openTickets.map(t=>ticketCard(t,'view')).join('');
+  return `
+    <div class="page-title">Tổng hợp sự cố</div>
+    <div class="page-sub">${fmtDate(TODAY)}</div>
+    <div class="grid-4" style="margin-bottom:24px">
+      <div class="stat-card" style="border-left-color:#ef4444"><div class="stat-val">${openTickets.length}</div><div class="stat-lbl">Đang mở</div><div class="stat-sub">sự cố chưa xử lý</div></div>
+      <div class="stat-card" style="border-left-color:#f59e0b"><div class="stat-val">${overdue.length}</div><div class="stat-lbl">Quá hạn</div><div class="stat-sub">cần chú ý ngay</div></div>
+      <div class="stat-card" style="border-left-color:#16a34a"><div class="stat-val">${resolvedAll.length}</div><div class="stat-lbl">Đã khắc phục</div><div class="stat-sub">tổng cộng</div></div>
+      <div class="stat-card" style="border-left-color:#2563eb"><div class="stat-val">${devices.length}</div><div class="stat-lbl">Tổng thiết bị</div><div class="stat-sub">${sites.length} công trường</div></div>
+    </div>
+    <div class="filter-bar">
+      <select id="d-filter-site" onchange="filterDTickets()">${siteOpts}</select>
+      <select id="d-filter-tech" onchange="filterDTickets()">${techOpts}</select>
+    </div>
+    <div class="sec-title" style="margin-bottom:10px">Sự cố đang xử lý (${openTickets.length})</div>
+    <div id="d-ticket-list" style="max-width:700px">${rows}</div>`;
+}
+
+function filterDTickets(){
+  const siteId = (document.getElementById('d-filter-site')||{}).value||'';
+  const techId = (document.getElementById('d-filter-tech')||{}).value||'';
+  const open = tickets.filter(t=>t.status==='open'&&(!siteId||t.siteId===siteId)&&(!techId||t.userId===techId));
+  const el = document.getElementById('d-ticket-list');
+  if(!el) return;
+  el.innerHTML = open.length===0 ? `<div class="empty">Không có sự cố nào</div>` : open.map(t=>ticketCard(t,false)).join('');
+}
+
+function toggleSite(sid){
+  const body  = document.getElementById('site-body-'+sid);
+  const arrow = document.getElementById('arrow-'+sid);
+  if(!body) return;
+  const open = body.style.display==='none';
+  body.style.display  = open ? 'block' : 'none';
+  if(arrow) arrow.style.transform = open ? 'rotate(90deg)' : 'rotate(0deg)';
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+try{ renderLogin(); }catch(e){ document.body.innerHTML='<div style="padding:40px;color:red;font-size:14px"><b>Lỗi khởi động:</b> '+e.message+'<br><pre>'+e.stack+'</pre></div>'; }
+</script>
+</body>
+</html>
