@@ -63,6 +63,10 @@ CREATE TABLE tickets (
   approved_date  DATE,
   resolved_date  DATE,
   resolve_note   TEXT,
+  incident_time  TIMESTAMPTZ,
+  operating_hours INTEGER,
+  operator       VARCHAR(255),
+  initial_cause  TEXT,
   created_at     TIMESTAMPTZ DEFAULT NOW()
 );
 
